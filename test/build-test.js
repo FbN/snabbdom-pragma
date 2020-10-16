@@ -1,23 +1,22 @@
-
 import path from 'path'
 import fs from 'fs'
 
 import test from 'ava'
+const __dirname = path.resolve()
+const fixturesDir = path.join(__dirname, 'test/build-specs')
 
-const fixturesDir = path.join(__dirname, 'build-specs')
+fs.readdirSync(fixturesDir).forEach(caseName => {
+    test(`Should works for ${caseName.split('-').join(' ')}`, async t => {
+        const fixtureDir = path.join(fixturesDir, caseName)
 
-fs.readdirSync(fixturesDir).forEach((caseName) => {
-  test(`Should works for ${caseName.split('-').join(' ')}`, (t) => {
-    const fixtureDir = path.join(fixturesDir, caseName)
+        const actual = (
+            await import(path.join(fixtureDir, 'actual.js'))
+        ).default()
 
-    const actual = require(
-      path.join(fixtureDir, 'actual.js')
-    ).default()
+        const expected = (
+            await import(path.join(fixtureDir, 'expected.js'))
+        ).default()
 
-    const expected = require(
-      path.join(fixtureDir, 'expected.js')
-    ).default()
-
-    t.deepEqual(actual, expected)
-  })
+        t.deepEqual(actual, expected)
+    })
 })

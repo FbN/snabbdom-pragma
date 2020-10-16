@@ -1,45 +1,36 @@
 import _extend from 'extend';
 
-var undefinedv = function (v) { return v === undefined; };
+const undefinedv = (v) => v === undefined;
 
-var number = function (v) { return typeof v === 'number'; };
+const number = (v) => typeof v === 'number';
 
-var string = function (v) { return typeof v === 'string'; };
+const string = (v) => typeof v === 'string';
 
-var text = function (v) { return string(v) || number(v); };
+const text = (v) => string(v) || number(v);
 
-var array = function (v) { return Array.isArray(v); };
+const array = (v) => Array.isArray(v);
 
-var object = function (v) { return typeof v === 'object' && v !== null; };
+const object = (v) => typeof v === 'object' && v !== null;
 
-var fun = function (v) { return typeof v === 'function'; };
+const fun = (v) => typeof v === 'function';
 
-var vnode = function (v) { return object(v) && 'sel' in v && 'data' in v && 'children' in v && 'text' in v; };
+const vnode = (v) => object(v) && 'sel' in v && 'data' in v && 'children' in v && 'text' in v;
 
-var svgPropsMap = { svg: 1, circle: 1, ellipse: 1, line: 1, polygon: 1,
+const svgPropsMap = { svg: 1, circle: 1, ellipse: 1, line: 1, polygon: 1,
   polyline: 1, rect: 1, g: 1, path: 1, text: 1 };
 
-var svg = function (v) { return v.sel in svgPropsMap; };
+const svg = (v) => v.sel in svgPropsMap;
 
 // TODO: stop using extend here
-var extend = function () {
-  var objs = [], len = arguments.length;
-  while ( len-- ) objs[ len ] = arguments[ len ];
 
-  return _extend.apply(void 0, [ true ].concat( objs ));
-};
+const extend = (...objs) => _extend(true, ...objs);
 
-var assign = function () {
-  var objs = [], len = arguments.length;
-  while ( len-- ) objs[ len ] = arguments[ len ];
+const assign = (...objs) => _extend(false, ...objs);
 
-  return _extend.apply(void 0, [ false ].concat( objs ));
-};
-
-var reduceDeep = function (arr, fn, initial) {
-  var result = initial;
-  for (var i = 0; i < arr.length; i++) {
-    var value = arr[i];
+const reduceDeep = (arr, fn, initial) => {
+  let result = initial;
+  for (let i = 0; i < arr.length; i++) {
+    const value = arr[i];
     if (array(value)) {
       result = reduceDeep(value, fn, result);
     } else {
@@ -49,58 +40,56 @@ var reduceDeep = function (arr, fn, initial) {
   return result
 };
 
-var mapObject = function (obj, fn) { return Object.keys(obj).map(
-  function (key) { return fn(key, obj[key]); }
+const mapObject = (obj, fn) => Object.keys(obj).map(
+  (key) => fn(key, obj[key])
 ).reduce(
-  function (acc, curr) { return extend(acc, curr); },
+  (acc, curr) => extend(acc, curr),
   {}
-); };
+);
 
-var deepifyKeys = function (obj, modules) { return mapObject(obj,
-  function (key, val) {
-    var dashIndex = key.indexOf('-');
+const deepifyKeys = (obj, modules) => mapObject(obj,
+  (key, val) => {
+    const dashIndex = key.indexOf('-');
     if (dashIndex > -1 && modules[key.slice(0, dashIndex)] !== undefined) {
-      var moduleData = {};
-      moduleData[key.slice(dashIndex + 1)] = val;
-      return ( obj = {}, obj[key.slice(0, dashIndex)] = moduleData, obj )
-      var obj;
+      const moduleData = {
+        [key.slice(dashIndex + 1)]: val
+      };
+      return {
+        [key.slice(0, dashIndex)]: moduleData
+      }
     }
-    return ( obj$1 = {}, obj$1[key] = val, obj$1 )
-    var obj$1;
+    return { [key]: val }
   }
-); };
+);
 
-
-
-var omit = function (key, obj) { return mapObject(obj,
-  function (mod, data) { return mod !== key ? (( obj = {}, obj[mod] = data, obj )) : {}
-    var obj; }
-); };
+const omit = (key, obj) => mapObject(obj,
+  (mod, data) => mod !== key ? ({ [mod]: data }) : {}
+);
 
 // Const fnName = (...params) => guard ? default : ...
 
-var createTextElement = function (text$$1) { return !text(text$$1) ? undefined : {
-  text: text$$1,
+const createTextElement = (text$1) => !text(text$1) ? undefined : {
+  text: text$1,
   sel: undefined,
   data: undefined,
   children: undefined,
   elm: undefined,
   key: undefined
-}; };
+};
 
-var considerSvg = function (vnode$$1) { return !svg(vnode$$1) ? vnode$$1 :
-  assign(vnode$$1,
-    { data: omit('props', extend(vnode$$1.data,
-      { ns: 'http://www.w3.org/2000/svg', attrs: omit('className', extend(vnode$$1.data.props,
-        { class: vnode$$1.data.props ? vnode$$1.data.props.className : undefined }
+const considerSvg = (vnode) => !svg(vnode) ? vnode :
+  assign(vnode,
+    { data: omit('props', extend(vnode.data,
+      { ns: 'http://www.w3.org/2000/svg', attrs: omit('className', extend(vnode.data.props,
+        { class: vnode.data.props ? vnode.data.props.className : undefined }
       )) }
     )) },
-    { children: undefinedv(vnode$$1.children) ? undefined :
-      vnode$$1.children.map(function (child) { return considerSvg(child); })
+    { children: undefinedv(vnode.children) ? undefined :
+      vnode.children.map((child) => considerSvg(child))
     }
-  ); };
+  );
 
-var rewrites = {
+const rewrites = {
   for: 'attrs',
   role: 'attrs',
   tabindex: 'attrs',
@@ -108,46 +97,42 @@ var rewrites = {
   key: null
 };
 
-var rewriteModules = function (data, modules) { return mapObject(data, function (key, val) {
-  var inner = {};
-  inner[key] = val;
+const rewriteModules = (data, modules) => mapObject(data, (key, val) => {
+  const inner = { [key]: val };
   if (rewrites[key] && modules[rewrites[key]] !== undefined) {
-    return ( obj = {}, obj[rewrites[key]] = inner, obj )
-    var obj;
+    return { [rewrites[key]]: inner }
   }
   if (rewrites[key] === null) {
     return {}
   }
-  var keys = Object.keys(rewrites);
-  for (var i = 0; i < keys.length; i++) {
-    var k = keys[i];
+  const keys = Object.keys(rewrites);
+  for (let i = 0; i < keys.length; i++) {
+    const k = keys[i];
     if (k.charAt(k.length - 1) === '*' && key.indexOf(k.slice(0, -1)) === 0 && modules[rewrites[k]] !== undefined) {
-      return ( obj$1 = {}, obj$1[rewrites[k]] = inner, obj$1 )
-      var obj$1;
+      return { [rewrites[k]]: inner }
     }
   }
   if (modules[key] !== undefined) {
-    return ( obj$2 = {}, obj$2[modules[key] ? modules[key] : key] = val, obj$2 )
-    var obj$2;
+    return { [modules[key] ? modules[key] : key]: val }
   }
   if (modules.props !== undefined) {
     return { props: inner }
   }
   return inner
-}); };
+});
 
-var sanitizeData = function (data, modules) { return considerSvg(rewriteModules(deepifyKeys(data, modules), modules)); };
+const sanitizeData = (data, modules) => considerSvg(rewriteModules(deepifyKeys(data, modules), modules));
 
-var sanitizeText = function (children) { return children.length > 1 || !text(children[0]) ? undefined : children[0]; };
+const sanitizeText = (children) => children.length > 1 || !text(children[0]) ? undefined : children[0];
 
-var sanitizeChildren = function (children) { return reduceDeep(children, function (acc, child) {
-  var vnode$$1 = vnode(child) ? child : createTextElement(child);
-  acc.push(vnode$$1);
+const sanitizeChildren = (children) => reduceDeep(children, (acc, child) => {
+  const vnode$1 = vnode(child) ? child : createTextElement(child);
+  acc.push(vnode$1);
   return acc
 }
-, []); };
+, []);
 
-var defaultModules = {
+const defaultModules = {
   attrs: '',
   props: '',
   class: '',
@@ -157,31 +142,29 @@ var defaultModules = {
   on: ''
 };
 
-var createElementWithModules = function (modules) {
-  return function (sel, data) {
-    var children = [], len = arguments.length - 2;
-    while ( len-- > 0 ) children[ len ] = arguments[ len + 2 ];
-
+const createElementWithModules = (modules) => {
+  return (sel, data, ...children) => {
     if (fun(sel)) {
       return sel(data || {}, children)
     }
-    var text$$1 = sanitizeText(children, modules);
+    const text = sanitizeText(children);
     return considerSvg({
-      sel: sel,
+      sel,
       data: data ? sanitizeData(data, modules) : {},
-      children: text$$1 ? undefined : sanitizeChildren(children),
-      text: text$$1,
+      children: text ? undefined : sanitizeChildren(children),
+      text,
       elm: undefined,
       key: data ? data.key : undefined
     })
   }
 };
 
-var createElement = createElementWithModules(defaultModules);
+const createElement = createElementWithModules(defaultModules);
 
 var index = {
-  createElement: createElement,
-  createElementWithModules: createElementWithModules
+  createElement,
+  createElementWithModules
 };
 
-export { createElementWithModules, createElement };export default index;
+export default index;
+export { createElement, createElementWithModules };

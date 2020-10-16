@@ -1,7 +1,7 @@
 // TODO: stop using extend here
 import _extend from 'extend'
 
-import * as is from './is'
+import * as is from './is.js'
 
 export const extend = (...objs) => _extend(true, ...objs)
 

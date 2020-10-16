@@ -1,6 +1,5 @@
-
-import h from 'snabbdom/h'
+import { h } from 'snabbdom/h'
 
 export default () => {
-  return h('div', {}, [])
+    return h('div', {}, [])
 }

@@ -1,5 +1,5 @@
 
-import { isVisible, isEnabled } from './neutral'
+import { isVisible, isEnabled } from './neutral.js'
 
 export default (h) => {
   return h('div', {

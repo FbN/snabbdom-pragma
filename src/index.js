@@ -1,6 +1,6 @@
 
-import * as is from './is'
-import * as fn from './fn'
+import * as is from './is.js'
+import * as fn from './fn.js'
 
 // Const fnName = (...params) => guard ? default : ...
 
